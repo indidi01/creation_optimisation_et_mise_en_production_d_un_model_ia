@@ -1,0 +1,13 @@
+{
+    "version_modele": "1.0.0",
+    "f1_test": 0.8571428571428571,
+    "taille_test": 469,
+    "versions_bibliotheques": {
+        "keras": "3.16.0.dev2026102604",
+        "tensorflow": "2.22.0rc0",
+        "scikit-learn": "1.9.1",
+        "numpy": "2.5.4",
+        "pandas": "3.1.0",
+        "joblib": "1.6.0"
+    }
+}
