@@ -1,14 +1,14 @@
 import argparse, json, math, yaml
 from pathlib import Path
 
-RACINE = Path(__file__).resolve.parent
+RACINE = Path(__file__).resolve().parent
 
 def verifier_qualite(chemin_metriques):
-    with open(RACINE / "config.yaml", encoding="utf-8") as fichier:
-        configuration = yaml.safe_load(fichier)
+    with open(RACINE / "config.yaml", encoding="utf-8") as fichier_config:
+        configuration = yaml.safe_load(fichier_config)
 
-    with open(chemin_metriques, encoding="utf-8") as ficher:
-        metriques = json.load(fichier)
+    with open(chemin_metriques, encoding="utf-8") as fichier_metriques:
+        metriques = json.load(fichier_metriques)
 
     f1 = metriques["f1_test"]
     taille = metriques["taille_test"]
@@ -36,7 +36,7 @@ def verifier_qualite(chemin_metriques):
     print(f"ACCEPTÉ: F1 = {f1:.4f}, taille du test = {taille}")
     return True
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--metrics",
