@@ -62,15 +62,14 @@ jobs:
                 curl --fail --show-error \
                     --retry 30 \
                     --retry-delay 2 \
-                    --retry-connrefused \
+                    --retry-all-errors \
                     --connect-timeout 2 \
                     --max-time 5 \
                     http://127.0.0.1:8000/health
-
             - name: Afficher les logs
               if: always()
               run: docker logs films-api
 
             - name: Arreter le conteneur
               if: always()
-              run: doker rm -f films-api
+              run: docker rm -f films-api
