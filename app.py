@@ -73,3 +73,7 @@ def predict(entree: TexteEntree, request: Request):
         "probabilite": probabilite,
         "version": ressources.version_modele
     }
+
+@app.get("/hello")
+def hello():
+    return {"message":"hello depuis la version deployee sur Azure"}
