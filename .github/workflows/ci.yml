@@ -40,6 +40,36 @@ jobs:
             - name: Executer les tests
               run: python -m pytest -v
 
+    publier:
+      needs: image
+      if: github.event_name == 'push'
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Recuperer l'image verifiee
+          uses: actions/download-artifact@v8
+          with:
+            name: image-docker
+
+        - name: Charger l'image dans Docker
+          run: docker load -i films-api.tar.gz
+
+        - name: Se connecter au registre Azure
+          uses: docker/login-action@v4
+          with:
+            registry: ${{ secrets.ACR_LOGIN_SERVER }}
+            username: ${{ secrets.ACR_USERNAME }}
+            password: ${{ secrets.ACR_PASSWORD }}
+
+        - name: Etiqueter et publier l'image
+          env:
+            ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+            COMMIT_SHA: ${{ github.sha }}
+          run: |
+            IMAGE_DISTANTE="$ACR_LOGIN_SERVER/films-api:$COMMIT_SHA"
+            docker tag "films-api:$COMMIT_SHA" "$IMAGE_DISTANTE"
+            docker push "$IMAGE_DISTANTE"
+
     image:
         needs: test
         runs-on: ubuntu-latest
@@ -73,3 +103,16 @@ jobs:
             - name: Arreter le conteneur
               if: always()
               run: docker rm -f films-api
+
+            - name: Exporter l'image verifiee
+              run: docker save films-api:${{ github.sha }} | gzip > films-api.tar.gz
+
+            - name: Conserver l'image pour le job suivant
+              uses: actions/upload-artifact@v7
+              with:
+                name: image-docker
+                path: films-api.tar.gz
+                compression-level: 0
+                retention-days: 1
+                if-no-files-found: error
+
