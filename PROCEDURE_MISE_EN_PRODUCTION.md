@@ -1,21 +1,39 @@
-# Procédure de mise en production et journal des versions
+# Procédure de mise en production
 
-Projet : API de classification de films. Mise à jour : 28/10/2026. Décideur et exécutant : moi. Ressources connues : ivellaRG (partagé), acrfilmsivella.azurecr.io, dépôt d'images films-api, application film-app. Procédure synthétique destinée à tenir sur une page à la mise en forme.
+Projet de classification de films. Mise à jour du 28 octobre 2026.
 
-1. **Déclencheur.** Correction, nouvelle route ou nouveau modèle. Noter le changement ; conserver le commit complet et la référence de l'image actuellement déployée avant toute modification.
-2. **Vérifications.** Exécuter `python barriere_qualite.py` et `python -m pytest -v`. Vérifier config.yaml (F1 minimum 0,82 ; taille minimale 400), la cohérence du modèle et de metrics.json et l'absence de secrets dans le code. Refuser la version si un contrôle échoue.
-3. **Publication.** Commit puis push. Le workflow exécute test → image → publier : barrière et tests ; construction et contrôle de /health ; transfert de l'image vérifiée et publication dans ACR sous le tag du commit. Les secrets ACR_LOGIN_SERVER, ACR_USERNAME et ACR_PASSWORD permettent la connexion du robot. Attendre trois jobs verts et vérifier la présence du tag dans le registre. Une publication n'est pas une mise en ligne.
-4. **Déploiement manuel.** Dans film-app, ouvrir Containers / Conteneurs et modifier/déployer une révision avec `acrfilmsivella.azurecr.io/films-api:<commit>`. Sélectionner explicitement le tag, conserver 1 vCPU, 2 Gio et l'entrée publique HTTP vers le port 8000. Utiliser les identifiants administrateur du registre stockés comme secret, selon le brief ; ne pas demander une attribution de rôle via identité managée. Conserver l'ancien tag pour le rollback.
-5. **Contrôle public.** Attendre une révision saine et vérifier la répartition du trafic vers la version voulue. Sur l'URL HTTPS : /health répond 200 avec version et commit si instrumenté ; /predict renvoie classe/probabilité/version pour un texte valide, 422 pour un texte vide ou très court ; /hello apparaît uniquement dans la nouvelle version prévue. Conserver les captures et noter le résultat.
-6. **Retour arrière.** Je décide le retour si l'application ne démarre pas, si les contrôles échouent ou dans le cadre de la démonstration du TP. Je redéploie l'image portant l'ancien commit ; je contrôle la révision servant le trafic, /health, /predict et la disparition de /hello (404 et absence dans /docs). Si l'ancienne image n'expose pas le commit, conserver une preuve de sa référence dans Azure et signaler cette limite. Consigner date, commit, résultat et preuve. Ne pas supprimer l'ancienne image avant le test de retour arrière.
+Je décide de publier une version après une correction, une modification du modèle ou l'ajout d'une fonctionnalité. Je réalise aussi les vérifications, le déploiement et le retour arrière.
 
-## Journal factuel à compléter avec les preuves
+## Préparer et publier la version
 
-| Date | Commit complet | Changement / opération | Résultat connu et preuve restante |
+Je vérifie le modèle et ses métriques, puis je lance :
+
+```bash
+python barriere_qualite.py
+python -m pytest -v
+```
+
+La configuration demande un F1 minimum de 0,82 et au moins 400 films de test. Le score doit être celui du réseau sauvegardé. Je vérifie ce point avant le rendu car la barrière a affiché 0,8571, alors que le réseau de graine 0 évalué précédemment obtenait 0,8609.
+
+J'enregistre les changements dans Git et je fais un push. GitHub Actions exécute les tests, construit et vérifie l'image, puis la publie dans acrfilmsivella.azurecr.io. L'image porte le nom films-api et son étiquette est le commit complet. J'attends les trois jobs verts avant de déployer.
+
+## Déployer et contrôler
+
+Je note l'image actuellement utilisée par film-app. Dans Azure Container Apps, j'ouvre Conteneurs, puis je modifie et déploie une révision avec la nouvelle étiquette. Je garde 1 vCPU, 2 Gio de mémoire et une entrée publique HTTP vers le port 8000. L'accès au registre utilise ses identifiants administrateur enregistrés comme secret.
+
+Je vérifie la révision qui reçoit le trafic et je teste l'adresse publique. La route /health doit répondre avec la version et le commit si son suivi a été intégré. La route /predict doit accepter un résumé valide et refuser un texte vide ou trop court. Lors de l'ajout de /hello, je vérifie aussi sa réponse. Je conserve les captures et je complète le journal.
+
+## Revenir à l'ancienne version
+
+Je reviens en arrière si la nouvelle version ne démarre pas ou échoue aux contrôles, ainsi que pour la démonstration du TP. Je redéploie l'image de l'ancien commit et je vérifie le trafic, /health et /predict. La route /hello doit disparaître après le retour à la version qui ne la contenait pas. Je garde l'ancienne image jusqu'à la fin de cette vérification.
+
+## Journal des versions
+
+| Date | Commit | Changement | Résultat |
 |---|---|---|---|
-| 27–28/10, date exacte à confirmer | 4472cdf15d5028ec0f11de0b8ef4cb363046d183 | Image publiée puis utilisée pour un essai Docker local | Authentification ACR corrigée ; référence visible dans l'échange. Ce tag ne prouve pas une mise en ligne Azure. |
-| 28/10, heure à relever | À relever dans Azure | Déploiement initial de film-app | Échecs droits, région puis tag manquant documentés ; révision saine et contrôles publics à joindre. |
-| 28/10, heure à relever | À relever dans GitHub et Azure | Ajout /hello, suivi du commit dans /health si intégré | Publication discutée ; résultat public à confirmer par capture. |
-| À confirmer | Ancien commit à relever | Retour à l'image précédente | Ne pas déclarer réussi sans preuve /hello absent et ancienne image déployée. |
+| 27 ou 28 octobre, à préciser | 4472cdf15d5028ec0f11de0b8ef4cb363046d183 | Publication de l'image et essai Docker local | Image récupérée depuis le registre. Cela ne prouve pas son déploiement Azure. |
+| 28 octobre, à confirmer | À relever dans Azure | Première mise en ligne | Captures des contrôles publics à joindre |
+| 28 octobre, à confirmer | À relever dans GitHub et Azure | Ajout de /hello | Réponse publique à joindre |
+| À compléter | Ancien commit à relever | Retour arrière | Ancienne image et disparition de /hello à justifier |
 
-Les dates de discussion ne remplacent pas les dates de déploiement. Compléter le journal depuis les commits, les révisions et les captures, sans inventer les identifiants manquants.
+Si l'ancienne image n'affiche pas son commit dans /health, je le signale et je conserve sa référence visible dans Azure. Je complète les dates et résultats avec les preuves réelles.

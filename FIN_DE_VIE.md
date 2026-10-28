@@ -1,35 +1,48 @@
-# Fin de vie des composants
+# Fin de vie du projet
 
-Mise à jour : 28/10/2026. Décision et exécution : moi. Plan adapté aux ressources vues dans l'échange ; sa réalisation reste à confirmer. Aucune suppression n'est affirmée ici.
+Mise à jour du 28 octobre 2026. Je décide de l'arrêt et je réalise les suppressions après avoir conservé les preuves nécessaires au rendu.
 
-## Partielle et totale
+## Fin de vie partielle
 
-La fin de vie partielle retire une version obsolète tout en maintenant le service et une possibilité de retour arrière jusqu'à validation. La fin de vie totale ferme le service et retire les ressources et accès dédiés. Le code et les pièces d'évaluation peuvent rester archivés : la fermeture du service n'impose pas de détruire son historique pédagogique.
+Une nouvelle version remplace l'ancienne, mais l'application reste disponible. Je conserve l'ancienne image et sa référence jusqu'à la vérification du retour arrière. Une fois cette étape terminée et la version en service validée, je peux retirer les versions qui ne servent plus.
 
-Déclencheur de fermeture totale : démonstration terminée, captures du déploiement/rollback conservées et inventaire des ressources vérifié. Pas de date de suppression réalisée connue. La date du 29/10 du brouillon était une proposition, non un constat.
+## Fin de vie totale
 
-## Inventaire et ordre de retrait
+À la fin du TP, je ferme le service et je supprime les ressources qui lui sont dédiées. Je conserve les sources, les documents et les éléments nécessaires à l'évaluation.
 
-| Composant | Fin de vie partielle : quand et comment | Fin de vie totale : ordre et méthode | Ce qui est conservé | Coût du maintien |
+| Composant | Quand et comment le retirer | Ordre de retrait | Ce que je conserve | Coût si je le laisse en place |
 |---|---|---|---|---|
-| Application film-app et révisions | Après validation de la nouvelle version, désactiver les anciennes révisions qui ne servent plus au trafic ni au rollback | 2. Supprimer l'application dédiée dans Azure ; contrôler sa disparition | URL historique, commits, révisions et réponses de contrôle | Calcul/requêtes selon activité et offre ; montant non relevé |
-| Modèle reseau.keras, TF-IDF et métriques | Remplacer comme un ensemble cohérent, garder la version précédente jusqu'au test du rollback | 3. Retirer les copies de production avec l'application et les images ; nettoyer les copies temporaires | Artefacts locaux/dans le dépôt nécessaires à l'évaluation et à la reproductibilité | Disque ou stockage selon support ; non chiffré |
-| Images films-api:<commit> | Nettoyer les versions inutilisées seulement après validation et fin du besoin de rollback | 3. Retirer les conteneurs/copies locaux inutiles ; suppression des images cloud avec le registre à l'étape 4 | Dockerfile, références/digests et preuves ; pas d'archive binaire CI permanente requise | Stockage registre/local et éventuels transferts ; non chiffré |
-| Registre acrfilmsivella | Le conserver tant que le service et le retour arrière en dépendent | 4. Supprimer le registre dédié après l'application | Nom, tags/digests et relevé des coûts | Offre Basic facturée tant que le registre existe ; montant exact à relever |
-| Environnement Container Apps ivella | Ne pas le retirer s'il héberge une application utile | 5. Inventorier les applications et travaux associés ; supprimer uniquement si dédié et devenu inutilisé | Inventaire avant/après | Selon profil de charge et ressources associées ; non chiffré |
-| Journaux / Log Analytics | Exporter les preuves et retirer ce qui n'est plus nécessaire selon les règles de formation | 6. Vérifier l'espace associé, notamment workspaceivellarg882c visible dans le portail ; supprimer seulement si dédié et sans autre consommateur | Logs utiles nettoyés et captures ; association exacte à confirmer | Ingestion/rétention éventuelles ; montant à identifier |
-| Secrets Azure et GitHub | Retirer/renouveler les identifiants devenus obsolètes | 7. Retirer ACR_LOGIN_SERVER, ACR_USERNAME, ACR_PASSWORD des secrets du dépôt après fermeture ; les secrets de l'application disparaissent avec elle ; retirer les accès locaux ACR inutiles | Noms des secrets, jamais leurs valeurs | Pas de coût direct mesuré ; accès résiduel si oubli |
-| Dépôt Git et workflow | Garder les commits nécessaires au rollback ; laisser expirer les artefacts CI à un jour selon le workflow | 8. Désactiver la publication devenue inutile ; conserver le dépôt pour le rendu, l'archiver après correction/évaluation selon consignes | Sources, historique, modèles, documents et preuves autorisés | Quotas GitHub de stockage/exécution, non relevés |
-| Données CSV et échantillon de référence | Retirer les copies intermédiaires inutiles | 8. Nettoyer copies temporaires ; conserver les données autorisées nécessaires au rendu, documenter leur provenance | reference.csv et données autorisées pour reproduction | Stockage local ou cloud éventuel, non chiffré |
-| Groupe ivellaRG et autres projets | Aucun retrait lié à ce TP | À conserver : ne pas supprimer ivellaRG, streamvault, indianstockage ou une ressource partagée | Ressources des autres exercices | Hors périmètre de ce TP |
+| Application film-app et révisions | Après les contrôles et le retour arrière, supprimer l'application dans Azure | 1, après sauvegarde des preuves | Captures, URL historique, commits et résultats | Calcul et requêtes selon l'utilisation |
+| Modèle reseau.keras et TF-IDF | Retirer les copies de production avec l'application et les images | 2 | Modèle local, TF-IDF, metrics.json et code nécessaires au rendu | Espace de stockage selon le support |
+| Images Docker | Retirer les copies locales inutiles et supprimer les images du registre avec celui-ci | 2 | Dockerfile, références des images et preuves des tests | Stockage local et stockage dans le registre |
+| Registre acrfilmsivella | Supprimer le registre après l'application | 3 | Liste des versions utilisées et coût relevé | L'offre Basic reste facturée tant que le registre existe |
+| Environnement ivella | Vérifier qu'il n'héberge aucun autre service, puis le supprimer s'il est dédié au TP | 4 | Inventaire avant et après | Selon les ressources et le profil utilisés |
+| Journaux associés | Identifier l'espace Log Analytics lié, conserver les preuves utiles et le supprimer seulement s'il est dédié | 5 | Extraits utiles sans secrets | Ingestion et conservation des journaux selon l'offre |
+| Secrets Azure et GitHub | Retirer les trois secrets ACR du dépôt après fermeture. Les secrets de l'application sont retirés avec elle. Déconnecter Docker local du registre | 6 | Noms des secrets, sans leurs valeurs | Aucun coût direct relevé, mais des accès peuvent rester actifs |
+| Dépôt et GitHub Actions | Désactiver la publication inutile et conserver le dépôt pour l'évaluation. L'archiver ensuite selon les consignes | 7 | Code, historique, documents et preuves | Stockage et exécutions selon les quotas GitHub |
+| Données | Supprimer les copies temporaires et garder uniquement les données autorisées utiles à la reproduction | 7 | Provenance, données autorisées et reference.csv | Stockage selon leur emplacement |
 
-## Exécution
+Le groupe ivellaRG est partagé. Je le conserve avec les comptes streamvault et indianstockage. Je vérifie aussi les ressources créées lors des tentatives de déploiement pour ne pas laisser un environnement dédié inutilisé.
 
-1. Sauvegarder preuves, journal des versions, inventaire et relevé des coûts disponible. Confirmer les dépendances et le caractère dédié de chaque ressource.
-2. Appliquer les étapes 2 à 8 du tableau. Ne jamais supprimer le groupe partagé ivellaRG. Les ressources éventuellement créées lors des essais échoués doivent aussi être inventoriées ; leur seule présence ne prouve pas qu'elles sont dédiées et supprimables.
-3. Vérifier que les ressources dédiées ont disparu ; conserver des captures datées de la liste des ressources et du journal d'activité. Une application simplement arrêtée n'est pas une application supprimée.
-4. Compléter PREUVE_FIN_DE_VIE_TOTALE.md avec les résultats réels. Reconsulter Cost Management après remontée des données : la clôture ne se prouve pas par un total immédiatement nul.
+## Vérifier les suppressions
 
-## Coût observé et statut
+Avant de supprimer, je garde un inventaire, les preuves du déploiement et du retour arrière, ainsi que le relevé de coûts disponible. Après chaque retrait, je vérifie la disparition de la ressource dans Azure et je conserve une capture datée. Arrêter l'application ne suffit pas à prouver sa suppression.
 
-Au 28/10, les vues de coûts partagées affichent uniquement les comptes de stockage d'autres usages sur les journées consultées. Aucun montant spécifique à ACR/Container Apps n'est identifié. Coût du TP : en attente de données, pas 0 €. Fin de vie totale : non attestée dans les éléments disponibles.
+Au 28 octobre, les échanges disponibles ne confirment pas la suppression de l'application, du registre ni de l'environnement. Les captures de suppression restent à joindre à ce document.
+
+| Vérification finale | Résultat et date |
+|---|---|
+| film-app supprimée | À compléter |
+| acrfilmsivella supprimé | À compléter |
+| Environnement dédié supprimé ou conservation justifiée | À compléter |
+| Journaux dédiés traités | À compléter |
+| Secrets retirés et publication arrêtée | À compléter |
+| Ressources des autres exercices conservées | À compléter |
+
+## Coût final
+
+Le 28 octobre, Cost Management ne montre pas encore de montant attribuable au registre et à l'application dans les vues consultées. Le montant des comptes de stockage et le total mensuel du groupe ne représentent pas le coût de ce projet.
+
+Je consulterai à nouveau les dépenses après leur actualisation, sur toute la période de création à suppression, en les détaillant par ressource. Je conserverai l'export et la date du relevé, même si les ressources ont déjà été supprimées.
+
+Coût total du TP : à compléter. Période : à compléter. Date du relevé final : à compléter. Preuve : à joindre.
